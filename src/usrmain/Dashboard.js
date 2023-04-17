@@ -288,7 +288,7 @@ export default function Dashboard() {
             ""
           )
         ) : (
-          <Navigate to="/" />
+          <Navigate to="/Education-Metaverse/" />
         )}
       </Main>
     </Box>
