@@ -128,7 +128,7 @@ export default function Dashboard() {
         console.log(error);
       });
 
-    navigate("/");
+    navigate("/Education-Metaverse/");
   };
 
   useEffect(() => {
