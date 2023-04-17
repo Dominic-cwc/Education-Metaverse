@@ -75,7 +75,7 @@ export default function Login() {
                   username: snapshot.val().username,
                 })
               );
-              navigate("/dashboard");
+              navigate("/Education-Metaverse/dashboard/");
             } else {
               console.log("No data available");
             }
@@ -160,7 +160,7 @@ export default function Login() {
             console.error(error);
           });
 
-        navigate("/dashboard");
+        navigate("/Education-Metaverse/dashboard");
         // ...
       })
       .catch((error) => {

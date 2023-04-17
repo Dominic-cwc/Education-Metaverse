@@ -2,7 +2,7 @@
   "name": "comp3334-project",
   "version": "0.1.0",
   "private": true,
-  "homepage": https://dominic-cwc.github.io/Education-Metaverse
+  "homepage": "https://dominic-cwc.github.io/Education-Metaverse",
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -16,6 +16,7 @@
     "bootstrap": "^5.2.3",
     "crypto-js": "^4.1.1",
     "firebase": "^9.18.0",
+    "gh-pages": "^5.0.0",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -24,8 +25,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-	"predeploy": "npm run build",
-	"deploy": "gh-pages -d build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
