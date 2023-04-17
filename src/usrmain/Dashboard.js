@@ -233,8 +233,7 @@ export default function Dashboard() {
           <ListItem key={"Main"} disablePadding>
             <ListItemButton
               onClick={() => {
-                //setcurrentState("Main");
-                window.location.reload();
+                setcurrentState("Main");
               }}
             >
               <ListItemIcon>
