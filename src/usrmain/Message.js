@@ -38,8 +38,9 @@ const useStyles = makeStyles({
     borderRight: "1px solid #e0e0e0",
   },
   messageArea: {
-    height: "555px",
+    height: "644px",
     overflowY: "auto",
+    overflow: "auto",
   },
 });
 
@@ -107,7 +108,7 @@ const Message = () => {
     const timestamp = currentTime.timestamp;
 
     const hashedMessage = hashMessage(textmessage, dateStr);
-    const digitalSignature = hashMessage(textmessage + dateStr, myuserid);
+    const verificationstr = hashMessage(textmessage + dateStr, myuserid);
 
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
@@ -139,7 +140,7 @@ const Message = () => {
                         DateString: dateStr,
                         Timestamp: timestamp,
                         Content: encrypt(textmessage),
-                        digitalSignature: digitalSignature,
+                        verificationstr: verificationstr,
                       }
                     )
                       .then(() => {
@@ -166,7 +167,7 @@ const Message = () => {
                         DateString: dateStr,
                         Timestamp: timestamp,
                         Content: encrypt(textmessage),
-                        digitalSignature: digitalSignature,
+                        verificationstr: verificationstr,
                       }
                     )
                       .then(() => {
@@ -196,7 +197,7 @@ const Message = () => {
                   DateString: dateStr,
                   Timestamp: timestamp,
                   Content: encrypt(textmessage),
-                  digitalSignature: digitalSignature,
+                  verificationstr: verificationstr,
                 }
               )
                 .then(() => {
@@ -245,13 +246,13 @@ const Message = () => {
             if (snapshot.exists()) {
               const temparr = [];
               snapshot.forEach((childSnapshot) => {
-                //check digital signature
+                //check the message data integrity
                 const time = childSnapshot.val().DateString;
                 const message = decrypt(childSnapshot.val().Content);
                 const sender = childSnapshot.val().From;
-                const digitalSignature = childSnapshot.val().digitalSignature;
+                const verificationstr = childSnapshot.val().verificationstr;
                 const hashedMessage = hashMessage(message + time, sender);
-                if (digitalSignature === hashedMessage) {
+                if (verificationstr === hashedMessage) {
                   temparr.push(childSnapshot.val());
                 }
                 sendtorece = true;
@@ -277,11 +278,9 @@ const Message = () => {
                 const time = childSnapshot.val().DateString;
                 const message = decrypt(childSnapshot.val().Content);
                 const sender = childSnapshot.val().From;
-                const digitalSignature = childSnapshot.val().digitalSignature;
+                const verificationstr = childSnapshot.val().verificationstr;
                 const hashedMessage = hashMessage(message + time, sender);
-                console.log(digitalSignature);
-                console.log(hashedMessage);
-                if (digitalSignature === hashedMessage) {
+                if (verificationstr === hashedMessage) {
                   temparr.push(childSnapshot.val());
                 }
                 receivetosend = true;
@@ -419,54 +418,52 @@ const Message = () => {
             />
           </Grid>
           <Divider />
-          <Paper style={{ maxHeight: 664, overflow: "auto" }}>
-            <List>
-              {/* mapping, avoid too much user in the screen, used <Paper/> component */}
-              {Object.keys(userData).map((key) =>
-                key !== myuser.id ? (
-                  searchfield === "" ? (
-                    <ListItemButton
-                      key={key}
-                      onClick={() => {
-                        setReceiver(userData[key].username);
-                        setReceiverID(key);
-                      }}
-                    >
-                      <ListItemIcon>
-                        <Avatar alt={key} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          userData[key].username.length > 10
-                            ? userData[key].username.substr(0, 10) + "..." //prevent username too long
-                            : userData[key].username
-                        }
-                      ></ListItemText>
-                    </ListItemButton>
-                  ) : userData[key].username.includes(searchfield) ? (
-                    <ListItemButton
-                      key={key}
-                      onClick={() => {
-                        setReceiver(userData[key].username);
-                        setReceiverID(key);
-                      }}
-                    >
-                      <ListItemIcon>
-                        <Avatar alt={key} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          userData[key].username.length > 10
-                            ? userData[key].username.substr(0, 10) + "..." //prevent username too long
-                            : userData[key].username
-                        }
-                      ></ListItemText>
-                    </ListItemButton>
-                  ) : null
+          <List style={{ maxHeight: 664, overflow: "auto" }}>
+            {/* mapping, avoid too much user in the screen, used overflow */}
+            {Object.keys(userData).map((key) =>
+              key !== myuser.id ? (
+                searchfield === "" ? (
+                  <ListItemButton
+                    key={key}
+                    onClick={() => {
+                      setReceiver(userData[key].username);
+                      setReceiverID(key);
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Avatar alt={key} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        userData[key].username.length > 10
+                          ? userData[key].username.substr(0, 10) + "..." //prevent username too long
+                          : userData[key].username
+                      }
+                    ></ListItemText>
+                  </ListItemButton>
+                ) : userData[key].username.includes(searchfield) ? (
+                  <ListItemButton
+                    key={key}
+                    onClick={() => {
+                      setReceiver(userData[key].username);
+                      setReceiverID(key);
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Avatar alt={key} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        userData[key].username.length > 10
+                          ? userData[key].username.substr(0, 10) + "..." //prevent username too long
+                          : userData[key].username
+                      }
+                    ></ListItemText>
+                  </ListItemButton>
                 ) : null
-              )}
-            </List>
-          </Paper>
+              ) : null
+            )}
+          </List>
         </Grid>
         <Grid item xs={9}>
           {/* The receiver info. */}
@@ -482,70 +479,47 @@ const Message = () => {
           </Grid>
 
           <Divider />
-          {/* mapping, avoid too much message in the screen, used <Paper/> component */}
-          <Paper style={{ maxHeight: 555, overflow: "auto" }}>
-            <List className={classes.messageArea}>
-              {/* pre-received messages */}
-              {receivedMessage.map((message) =>
-                message.From === myuser.id ? (
-                  <ListItem key={message.DateString} alignItems="flex-start">
-                    <Grid container>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="right"
-                          primary={decrypt(message.Content)}
-                        ></ListItemText>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="right"
-                          secondary={message.DateString}
-                        ></ListItemText>
-                      </Grid>
+          {/* mapping, avoid too much message in the screen, used overflow*/}
+          <List className={classes.messageArea}>
+            {/* pre-received messages */}
+            {receivedMessage.map((message) =>
+              message.From === myuser.id ? (
+                <ListItem key={message.DateString} alignItems="flex-start">
+                  <Grid container>
+                    <Grid item xs={12}>
+                      <ListItemText
+                        align="right"
+                        primary={decrypt(message.Content)}
+                      ></ListItemText>
                     </Grid>
-                  </ListItem>
-                ) : (
-                  <ListItem key={message.DateString} alignItems="flex-start">
-                    <Grid container>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="left"
-                          primary={decrypt(message.Content)}
-                        ></ListItemText>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="left"
-                          secondary={message.DateString}
-                        ></ListItemText>
-                      </Grid>
+                    <Grid item xs={12}>
+                      <ListItemText
+                        align="right"
+                        secondary={message.DateString}
+                      ></ListItemText>
                     </Grid>
-                  </ListItem>
-                )
-              )}
-              {/* new messages
-              {sentmessage.map((message) =>
-                message.To === receiverID ? (
-                  <ListItem key={message.Timestamp} alignItems="flex-start">
-                    <Grid container>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="right"
-                          primary={message.Content}
-                        ></ListItemText>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <ListItemText
-                          align="right"
-                          secondary={message.DateString}
-                        ></ListItemText>
-                      </Grid>
+                  </Grid>
+                </ListItem>
+              ) : (
+                <ListItem key={message.DateString} alignItems="flex-start">
+                  <Grid container>
+                    <Grid item xs={12}>
+                      <ListItemText
+                        align="left"
+                        primary={decrypt(message.Content)}
+                      ></ListItemText>
                     </Grid>
-                  </ListItem>
-                ) : null
-              )} */}
-            </List>
-          </Paper>
+                    <Grid item xs={12}>
+                      <ListItemText
+                        align="left"
+                        secondary={message.DateString}
+                      ></ListItemText>
+                    </Grid>
+                  </Grid>
+                </ListItem>
+              )
+            )}
+          </List>
           <Divider />
           <Grid container style={{ padding: "20px" }}>
             <Grid item xs={11}>
