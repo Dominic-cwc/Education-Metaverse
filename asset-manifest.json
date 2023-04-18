@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/Education-Metaverse/static/css/main.bb71cdff.css",
-    "main.js": "/Education-Metaverse/static/js/main.7f76e2bb.js",
+    "main.js": "/Education-Metaverse/static/js/main.237003da.js",
     "static/media/Material-Design-Iconic-Font.ttf?v=2.2.0": "/Education-Metaverse/static/media/Material-Design-Iconic-Font.5a588d6a8bfc41d69f88.ttf",
     "static/media/poppins-v5-latin-300italic.svg": "/Education-Metaverse/static/media/poppins-v5-latin-300italic.6b332dbde80c9d2001db.svg",
     "static/media/poppins-v5-latin-italic.svg": "/Education-Metaverse/static/media/poppins-v5-latin-italic.57ac19b1005792f48812.svg",
@@ -71,6 +71,6 @@
   },
   "entrypoints": [
     "static/css/main.bb71cdff.css",
-    "static/js/main.7f76e2bb.js"
+    "static/js/main.237003da.js"
   ]
 }
