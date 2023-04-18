@@ -38,6 +38,7 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [correctemailpw, setCorrectEmailPW] = useState(true);
 
   const handleSubmit = (event) => {
     // Prevent page reload
@@ -75,6 +76,7 @@ export default function Login() {
                   username: snapshot.val().username,
                 })
               );
+              setCorrectEmailPW(true);
               navigate("/Education-Metaverse/dashboard/");
             } else {
               console.log("No data available");
@@ -85,6 +87,8 @@ export default function Login() {
           });
       })
       .catch((error) => {
+        console.log("LOGIN FAILED");
+        setCorrectEmailPW(false);
         const errorCode = error.code;
         const errorMessage = error.message;
       });
@@ -225,6 +229,13 @@ export default function Login() {
                   placeholder="Password"
                 />
               </div>
+              {!correctemailpw ? (
+                <p className="fst-italic text-danger">
+                  *Incorrect email or password.
+                </p>
+              ) : (
+                ""
+              )}
               <div className="form-group">
                 <input
                   type="checkbox"
