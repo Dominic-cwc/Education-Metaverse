@@ -1,4 +1,3 @@
-# COMP 3334  GROUP PROJECT
 Education Metaverse
 
 Language : React.JS
@@ -20,3 +19,4 @@ Language : React.JS
 ### Integrity
 
 ### Availability
+https://dominic-cwc.github.io/Education-Metaverse/
