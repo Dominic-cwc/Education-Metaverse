@@ -1,6 +1,6 @@
-Education Metaverse
+###Education Metaverse
 
-Language : React.JS
+###Language : React.JS
 
 ## Function requirment
 
