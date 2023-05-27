@@ -95,11 +95,6 @@ export default function Course() {
   }, []);
 
   useEffect(() => {
-    console.log("user is typing comment");
-    console.log(comment);
-  }, [comment]);
-
-  useEffect(() => {
     console.log(disContent);
   }, [disContent]);
 

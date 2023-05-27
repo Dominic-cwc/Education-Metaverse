@@ -39,7 +39,6 @@ export default function Login() {
     password: "",
   });
   const [correctemailpw, setCorrectEmailPW] = useState(true);
-
   const handleSubmit = (event) => {
     // Prevent page reload
     event.preventDefault();
@@ -52,7 +51,7 @@ export default function Login() {
     console.log("connected");
 
     const hashedEmail = CryptoJS.SHA256(state.email).toString(CryptoJS.enc.Hex);
-
+    console.log(hashedEmail);
     const auth = getAuth();
     signInWithEmailAndPassword(auth, state.email, state.password)
       .then((userCredential) => {
@@ -77,7 +76,7 @@ export default function Login() {
                 })
               );
               setCorrectEmailPW(true);
-              navigate("/Education-Metaverse/dashboard/");
+              navigate("/dashboard");
             } else {
               console.log("No data available");
             }
@@ -164,7 +163,7 @@ export default function Login() {
             console.error(error);
           });
 
-        navigate("/Education-Metaverse/dashboard");
+        navigate("/dashboard");
         // ...
       })
       .catch((error) => {
@@ -188,10 +187,7 @@ export default function Login() {
             <figure>
               <img src={Login_logo} alt="Login Logo"></img>
             </figure>
-            <Link
-              to="/Education-Metaverse/SignUp"
-              className="signup-image-link"
-            >
+            <Link to="/SignUp" className="signup-image-link">
               Create an account
             </Link>
           </div>
@@ -278,18 +274,7 @@ export default function Login() {
 
   return (
     <>
-      <div className="login-form">
-        {isSubmitted ? (
-          <div>
-            User is successfully logged insnkjnjnk
-            <Alert severity="success">
-              This is a success alert — check it out!
-            </Alert>
-          </div>
-        ) : (
-          renderForm
-        )}
-      </div>
+      <div className="login-form">{renderForm}</div>
     </>
   );
 }
