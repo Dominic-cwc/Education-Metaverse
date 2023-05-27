@@ -187,7 +187,10 @@ export default function Login() {
             <figure>
               <img src={Login_logo} alt="Login Logo"></img>
             </figure>
-            <Link to="/Education-Metaverse/" className="signup-image-link">
+            <Link
+              to="/Education-Metaverse/SignUp"
+              className="signup-image-link"
+            >
               Create an account
             </Link>
           </div>
