@@ -157,7 +157,7 @@ export default function SignUp() {
             // Data saved successfully!
             // show a pop up screen
             // back to login page
-            navigate("/");
+            navigate("/Education-Metaverse/");
           })
           .catch((error) => {
             // The write failed...
@@ -311,7 +311,7 @@ export default function SignUp() {
             <figure>
               <img src={Login_logo} alt="Login Logo"></img>
             </figure>
-            <Link to="/" className="signup-image-link">
+            <Link to="/Education-Metaverse/" className="signup-image-link">
               I am already registered
             </Link>
           </div>

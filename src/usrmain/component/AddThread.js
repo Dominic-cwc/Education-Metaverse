@@ -54,25 +54,28 @@ export default function AddThread({ tag, func }) {
     func(true);
   };
 
-  const createPost = (title, text, e) => {
+  const createPost = async (title, text, e) => {
     const db = getFirestore();
     const user = localStorage.getItem("user");
     const timestamp = new Date().getTime();
 
-    addDoc(collection(db, "course/" + tag + "/Discuss/"), {
-      date: moment(timestamp).format("MMMM Do YYYY, h:mm:ss a"),
-      user: JSON.parse(user),
-      title: title,
-      content: text,
-      comment: [],
-      timestamp: timestamp,
-    })
-      .then(() => {
+    try {
+      const docRef = await addDoc(
+        collection(db, "course/" + tag + "/Discuss/"),
+        {
+          date: moment(timestamp).format("MMMM Do YYYY, h:mm:ss a"),
+          user: JSON.parse(user),
+          title: title,
+          content: text,
+          comment: [],
+          timestamp: timestamp,
+        }
+      ).then(() => {
         console.log("Post created!");
-      })
-      .catch((error) => {
-        console.error("Error adding document: ", error);
       });
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
 
   return (

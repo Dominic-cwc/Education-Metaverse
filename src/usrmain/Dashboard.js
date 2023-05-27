@@ -89,7 +89,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 export default function Dashboard() {
   const theme = useTheme();
-  const [username, setUsername] = useState("");
   const [currentState, setcurrentState] = useState("Main");
 
   const [draweropen, setdrawerOpen] = useState(false);
@@ -129,13 +128,12 @@ export default function Dashboard() {
         console.log(error);
       });
 
-    navigate("/");
+    navigate("/Education-Metaverse/");
   };
 
   useEffect(() => {
     const user = localStorage.getItem("user");
     console.log(JSON.parse(user));
-    setUsername(JSON.parse(user).username);
   }, []);
 
   return (
@@ -159,7 +157,7 @@ export default function Dashboard() {
             Education Metaverse
           </Typography>
           <Typography variant="h6" textAlign="right" sx={{ flexGrow: 1 }}>
-            Welcome, {username}
+            Welcome, {JSON.parse(localStorage.getItem("user")).username}
           </Typography>
           <Button
             variant="outlined"
@@ -235,8 +233,7 @@ export default function Dashboard() {
           <ListItem key={"Main"} disablePadding>
             <ListItemButton
               onClick={() => {
-                //setcurrentState("Main");
-                window.location.reload();
+                setcurrentState("Main");
               }}
             >
               <ListItemIcon>
@@ -291,7 +288,7 @@ export default function Dashboard() {
             ""
           )
         ) : (
-          <Navigate to="/" />
+          <Navigate to="/Education-Metaverse/" />
         )}
       </Main>
     </Box>
