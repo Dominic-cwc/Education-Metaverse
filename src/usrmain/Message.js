@@ -34,7 +34,7 @@ const useStyles = makeStyles({
   //   backgroundColor: "#e0e0e0",
   // },
   borderRight500: {
-    height: "726px",
+    height: "814px",
     borderRight: "1px solid #e0e0e0",
   },
   messageArea: {
@@ -59,21 +59,23 @@ const firebaseConfig = {
 /* -----Chatbox-------------- */
 const Message = () => {
   // Initialize Firebase
-  const [userData, setuserData] = useState([]);
+  const [userData, setuserData] = useState({});
 
-  const [receiver, setReceiver] = useState([]);
-  const [receiverID, setReceiverID] = useState([]);
+  const [receiver, setReceiver] = useState("");
+  const [receiverID, setReceiverID] = useState("");
 
   const [receivedMessage, setreceivedMessage] = useState([]);
 
   const [textmessage, settextmessage] = useState("");
-  const [messagesent, setmessagesent] = useState(false);
 
   const myuser = JSON.parse(localStorage.getItem("user"));
   const myuserName = myuser.username;
   const myuserid = myuser.id;
 
   const [searchfield, setsearchfield] = useState("");
+
+  const [renderMessage, setrenderMessage] = useState(false);
+  const [messagefetched, setmessagefetched] = useState(false);
 
   const getCurrentTime = () => {
     const current = new Date();
@@ -89,20 +91,18 @@ const Message = () => {
   const hashMessage = (textmessage, currentTime) => {
     // Concatenate the password and salt
     const data = textmessage + currentTime;
-    console.log(data + "     testing");
     // Hash the data using SHA-256
     const hashedMessage = CryptoJS.SHA256(data);
     // Return the hashed password
     return hashedMessage.toString(CryptoJS.enc.Hex);
   };
 
-  const sendMessage = (e) => {
+  const sendMessage = () => {
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     // Initialize Realtime Database and get a reference to the service
     const db = getDatabase(app);
 
-    console.log("connected (chat)");
     const currentTime = getCurrentTime();
     const dateStr = currentTime.datestr;
     const timestamp = currentTime.timestamp;
@@ -144,8 +144,7 @@ const Message = () => {
                       }
                     )
                       .then(() => {
-                        setmessagesent(true);
-                        console.log("Data saved successfully!");
+                        receiveMessage();
                       })
                       .catch((error) => {
                         // The write failed...
@@ -171,8 +170,7 @@ const Message = () => {
                       }
                     )
                       .then(() => {
-                        setmessagesent(true);
-                        console.log("Data saved successfully!");
+                        receiveMessage();
                       })
                       .catch((error) => {
                         // The write failed...
@@ -201,8 +199,7 @@ const Message = () => {
                 }
               )
                 .then(() => {
-                  setmessagesent(true);
-                  console.log("Data saved successfully!");
+                  receiveMessage();
                 })
                 .catch((error) => {
                   // The write failed...
@@ -215,17 +212,15 @@ const Message = () => {
       } else {
         // User is signed out
         // ...
-        console.log("not signed in");
       }
     });
   };
 
-  const receiveMessage = (e) => {
+  const receiveMessage = () => {
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     // Initialize Realtime Database and get a reference to the service
     const db = getDatabase(app);
-    console.log("connected (chat)");
 
     const sender = myuserid;
     const receiver = receiverID;
@@ -236,9 +231,6 @@ const Message = () => {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
         // ...
-
-        let sendtorece = false;
-        let receivetosend = false;
 
         //try sender|receiver to be the id, open n(n-1)/2 entries
         get(child(ref(db), "messages/" + sender + "|" + receiver)) //sender|receiver exist?
@@ -255,63 +247,79 @@ const Message = () => {
                 if (verificationstr === hashedMessage) {
                   temparr.push(childSnapshot.val());
                 }
-                sendtorece = true;
               });
 
               //sort the message by timestamp
               temparr.sort((a, b) => {
                 return a.Timestamp - b.Timestamp; // <0 a before b, >0 a after b
               });
-              setreceivedMessage(temparr);
+              if (!compareMessage(temparr, receivedMessage)) {
+                setreceivedMessage(temparr);
+                setmessagefetched((messagefetched) => !messagefetched);
+              }
+              return;
+            } else {
+              get(child(ref(db), "messages/" + receiver + "|" + sender)) //receiver|sender exist?
+                .then((snapshot) => {
+                  if (snapshot.exists()) {
+                    const temparr = [];
+                    snapshot.forEach((childSnapshot) => {
+                      //check verificationstr
+                      const time = childSnapshot.val().DateString;
+                      const message = decrypt(childSnapshot.val().Content);
+                      const sender = childSnapshot.val().From;
+                      const verificationstr =
+                        childSnapshot.val().verificationstr;
+                      const hashedMessage = hashMessage(message + time, sender);
+                      if (verificationstr === hashedMessage) {
+                        temparr.push(childSnapshot.val());
+                      }
+                    });
+
+                    //sort the message by timestamp
+                    temparr.sort((a, b) => {
+                      return a.Timestamp - b.Timestamp; // <0 a before b, >0 a after b
+                    });
+                    if (!compareMessage(temparr, receivedMessage)) {
+                      setreceivedMessage(temparr);
+                      setmessagefetched((messagefetched) => !messagefetched);
+                    }
+                    return;
+                  } else {
+                    //both not have
+                    setreceivedMessage([]);
+                    setmessagefetched((messagefetched) => !messagefetched);
+                    return;
+                  }
+                })
+                .catch((error) => {
+                  console.error(error);
+                });
             }
           })
           .catch((error) => {
             console.error(error);
           });
-
-        get(child(ref(db), "messages/" + receiver + "|" + sender)) //receiver|sender exist?
-          .then((snapshot) => {
-            if (snapshot.exists()) {
-              const temparr = [];
-              snapshot.forEach((childSnapshot) => {
-                //check digital signature
-                const time = childSnapshot.val().DateString;
-                const message = decrypt(childSnapshot.val().Content);
-                const sender = childSnapshot.val().From;
-                const verificationstr = childSnapshot.val().verificationstr;
-                const hashedMessage = hashMessage(message + time, sender);
-                if (verificationstr === hashedMessage) {
-                  temparr.push(childSnapshot.val());
-                }
-                receivetosend = true;
-              });
-
-              //sort the message by timestamp
-              temparr.sort((a, b) => {
-                return a.Timestamp - b.Timestamp; // <0 a before b, >0 a after b
-              });
-              setreceivedMessage(temparr);
-            }
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-
-        if (!sendtorece && !receivetosend) {
-          setreceivedMessage([]);
-        }
       } else {
         // User is signed out
         // ...
-        console.log("not signed in");
       }
     });
+  };
+
+  const compareMessage = (arr1, arr2) => {
+    if (arr1.length !== arr2.length) return false;
+
+    const len = Math.min(arr1.length, arr2.length);
+    for (let i = 0; i < len; i++) {
+      if (arr1[i].verificationstr !== arr2[i].verificationstr) return false;
+    }
+    return true;
   };
 
   const getDBcontent = () => {
     const app = initializeApp(firebaseConfig);
     const dbRef = ref(getDatabase(app));
-    console.log("connected");
     const user = JSON.parse(localStorage.getItem("user"));
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
@@ -321,13 +329,12 @@ const Message = () => {
         get(child(dbRef, "users/"))
           .then((snapshot) => {
             if (snapshot.exists()) {
-              const temparr1 = [];
+              const temparr1 = {};
               snapshot.forEach((childSnapshot) => {
                 temparr1[childSnapshot.key] = childSnapshot.val();
               });
               setuserData(temparr1);
             } else {
-              console.log("No data available");
             }
           })
           .catch((error) => {
@@ -342,6 +349,12 @@ const Message = () => {
   };
   useEffect(() => {
     getDBcontent();
+
+    const interval = setInterval(() => {
+      setrenderMessage((renderMessage) => !renderMessage);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -359,12 +372,12 @@ const Message = () => {
 
   useEffect(() => {
     receiveMessage();
-    setmessagesent(false);
-  }, [receiverID, messagesent]);
+  }, [receiverID, receiver, renderMessage]);
 
   useEffect(() => {
-    console.log(receivedMessage);
-  }, [receivedMessage]);
+    const element = document.getElementById("messageArea");
+    element.scrollTop = element.scrollHeight - element.clientHeight;
+  }, [messagefetched]);
 
   //luxury functions
 
@@ -398,11 +411,25 @@ const Message = () => {
       <Grid container component={Paper} className={classes.chatSection}>
         <Grid item xs={3} className={classes.borderRight500}>
           <List>
-            <ListItemButton key={myuserName}>
+            <ListItemButton
+              key={myuserName}
+              style={{
+                maxHeight: "56px",
+              }}
+            >
               <ListItemIcon>
                 <Avatar alt={myuserName} />
               </ListItemIcon>
-              <ListItemText primary={myuserName}>{myuserName}</ListItemText>
+              <ListItemText
+                primary={myuserName}
+                style={{
+                  maxHeight: "56px",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {myuserName}
+              </ListItemText>
             </ListItemButton>
           </List>
           <Divider />
@@ -418,7 +445,7 @@ const Message = () => {
             />
           </Grid>
           <Divider />
-          <List style={{ maxHeight: 664, overflow: "auto" }}>
+          <List style={{ maxHeight: "664px", overflow: "auto" }}>
             {/* mapping, avoid too much user in the screen, used overflow */}
             {Object.keys(userData).map((key) =>
               key !== myuser.id ? (
@@ -473,14 +500,23 @@ const Message = () => {
                 <ListItemIcon>
                   <Avatar alt={receiver} />
                 </ListItemIcon>
-                <ListItemText align="left">{receiver}</ListItemText>
+                <ListItemText
+                  align="left"
+                  style={{
+                    maxHeight: "56px",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {receiver}
+                </ListItemText>
               </ListItem>
             </List>
           </Grid>
 
           <Divider />
           {/* mapping, avoid too much message in the screen, used overflow*/}
-          <List className={classes.messageArea}>
+          <List className={classes.messageArea} id="messageArea">
             {/* pre-received messages */}
             {receivedMessage.map((message) =>
               message.From === myuser.id ? (
@@ -536,7 +572,6 @@ const Message = () => {
                     if (textmessage === "") return;
                     sendMessage();
                     settextmessage("");
-                    console.log("send message");
                   }
                 }}
               />
@@ -548,7 +583,6 @@ const Message = () => {
                     if (textmessage === "") return;
                     sendMessage();
                     settextmessage("");
-                    console.log("send message");
                   }}
                 />
               </Fab>
